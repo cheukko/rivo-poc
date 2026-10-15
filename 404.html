@@ -1,0 +1,80 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>RIVO PoC — Polygon Amoy</title><style>
+@font-face{font-family:BIZ;src:url(fonts/BIZUDPGothic-Regular.ttf);font-weight:400}
+@font-face{font-family:BIZ;src:url(fonts/BIZUDPGothic-Bold.ttf);font-weight:700}
+:root{--teal:#00A497;--deep:#00594F;--gold:#F8B500;--cream:#FFFBEF;--ink:#1F2A2A;--amber:#B97800}
+*{box-sizing:border-box;margin:0}
+body{background:var(--cream);font-family:BIZ,Inter,system-ui,sans-serif;color:var(--deep);min-height:100vh}
+.scr{display:none;min-height:100vh;flex-direction:column;max-width:480px;margin:0 auto}.scr.on{display:flex}
+.top{display:flex;align-items:center;justify-content:space-between;padding:14px 20px 0;min-height:52px}
+.logo{font:800 20px Inter,sans-serif;letter-spacing:.12em;color:var(--teal)}
+.back{width:44px;height:44px;border:0;background:none;font-size:24px;color:var(--deep)}
+.demo{font:700 11px BIZ;background:#fff;border:1.5px dashed var(--teal);color:var(--deep);padding:4px 10px;border-radius:12px}
+.body{flex:1;padding:12px 20px 24px;display:flex;flex-direction:column;gap:14px}
+.en{font:400 12px Inter,sans-serif;color:#4E7A74;margin-top:2px}
+h1{font-size:28px;line-height:1.35}h2{font-size:22px;line-height:1.35}
+.card{background:#fff;border-radius:22px;padding:16px 18px;box-shadow:0 2px 0 rgba(0,89,79,.08)}
+.btn{min-height:56px;border-radius:20px;background:var(--deep);color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;font:700 17px BIZ;border:0;width:100%;cursor:pointer}
+.btn small{font:500 11px Inter;opacity:.85}.btn.teal{background:var(--teal)}.btn.ghost{background:#fff;color:var(--deep);border:2px solid var(--deep)}
+.btn.big{min-height:96px;font-size:26px;border-radius:26px}
+.yen{font-family:Inter,sans-serif;font-weight:700;color:var(--ink);font-variant-numeric:tabular-nums}
+.lbl{font-size:12px;color:#4E7A74}.sp{flex:1}
+.warn{background:#FFF3D6;color:#6A4600;border-radius:16px;padding:12px 14px;font-size:14px}
+.info{background:#E3F3F1;border-radius:16px;padding:12px 14px;font-size:14px}
+.qr{width:180px;height:180px;margin:8px auto;display:grid;grid-template-columns:repeat(12,1fr)}
+.qr i{background:var(--ink)}.qr i.o{background:#fff}
+.stamp{width:140px;height:140px;border-radius:50%;margin:10px auto;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;font-weight:700;border:4px double var(--gold);color:#9A6E00;background:#FFF6DA;transform:rotate(-6deg);box-shadow:0 0 30px 8px rgba(248,181,0,.25)}
+.ok{width:84px;height:84px;border-radius:50%;background:var(--teal);color:#fff;font-size:44px;display:flex;align-items:center;justify-content:center;margin:10px auto}
+.row{display:flex;justify-content:space-between;align-items:baseline}
+input{font:700 28px Inter;width:100%;border:2px solid #CFE7E3;border-radius:16px;padding:10px 14px;color:var(--ink)}
+.ring{width:56px;height:56px;border-radius:50%;border:5px solid var(--teal);display:flex;align-items:center;justify-content:center;font:700 18px Inter;flex:none}
+.c{text-align:center}
+.stamp.sm{width:56px;height:56px;margin:0 12px 0 0;font-size:20px;transform:none;box-shadow:none;border-width:3px}
+#qrbox svg{width:200px;height:200px;display:block;margin:6px auto}
+.addr{font:600 12px ui-monospace,monospace;word-break:break-all;color:var(--ink);text-align:center}
+#log{font:12px ui-monospace,monospace;color:#4E7A74;padding:8px 20px;word-break:break-all;max-width:480px;margin:0 auto}
+.env{font:700 10px Inter;background:#7a3cff;color:#fff;padding:3px 8px;border-radius:10px}
+a{color:var(--teal)} .btn:disabled{opacity:.5}
+</style><script src="config.js"></script></head><body>
+<section class="scr on" id="start"><div class="top"><span class="logo">RIVO</span><span class="env" id="env"></span></div><div class="body">
+<div class="sp"></div><div class="stamp" style="transform:none">RIVO<span class="en">memory</span></div>
+<h1 class="c">支払いが、<br>思い出になる。</h1><p class="en c">Every payment becomes a memory.</p>
+<div class="warn">テストネットの試作です。本物のお金は使いません。<div class="en">Testnet proof of concept. Fake money only.</div></div><div class="sp"></div>
+<button class="btn teal big" data-go="signup">ウォレットをつくる<small>Create wallet with passkey</small></button></div></section>
+
+<section class="scr" id="signup"><div class="top"><button class="back" data-go="start">‹</button><span class="env">TESTNET</span></div><div class="body">
+<h2>顔認証ひとつで、ウォレットをつくります</h2><p class="en">One passkey. No seed phrase, no email.</p>
+<div class="info">鍵はあなたの端末のパスキーだけ。RIVOは鍵を持たず、署名者にもなりません。<div class="en">Your passkey is the only owner of your Safe. RIVO holds no key.</div></div>
+<label class="card" style="display:flex;gap:10px;align-items:center;font-size:14px"><input type="checkbox" id="agree" style="width:22px;height:22px"> 利用規約（テスト版）に同意します<span class="en">I agree to the test terms</span></label>
+<div class="sp"></div><button class="btn big" id="create">パスキーで登録<small>Sign up with passkey</small></button></div></section>
+
+<section class="scr" id="home"><div class="top"><span class="logo">RIVO</span><span class="env">TESTNET</span></div><div class="body">
+<div class="card"><div class="lbl">使えるお金 · Balance in yen (test USDC ¥150/USDC demo rate · JPYC ¥1)</div><div class="yen" style="font-size:40px" id="bal">…</div><div class="lbl" id="usdc"></div><div class="lbl" id="jpyc"></div><div class="lbl" id="deployed"></div></div>
+<button class="btn big" data-go="pay">支払う<small>Pay</small></button>
+<div class="card"><div class="lbl">お金を追加 · Add money (Polygon Amoy test USDC / JPYC)</div><div id="qrbox"></div><div class="addr" id="addr"></div>
+<button class="btn ghost" id="copy" style="min-height:44px;margin-top:8px">アドレスをコピー<small>Copy address</small></button></div>
+<button class="btn ghost" id="faucet" style="min-height:48px;font-size:15px">テストJPYCを受け取る<small>Get 10,000 test JPYC (official Amoy faucet, fee in USDC)</small></button>
+<button class="btn ghost" data-go="mem" style="min-height:48px;font-size:15px">思い出<small>Memories</small></button></div></section>
+
+<section class="scr" id="pay"><div class="top"><button class="back" data-go="home">‹</button><span class="env">TESTNET</span></div><div class="body">
+<h2>StarPay テスト店</h2><p class="en">Mock StarPay merchant</p>
+<div class="card"><div class="lbl">支払うお金 · Pay with</div><div style="display:flex;gap:16px;margin-top:8px;font:700 17px BIZ">
+<label><input type="radio" name="tok" value="USDC" checked style="width:20px;height:20px"> USDC</label><label><input type="radio" name="tok" value="JPYC" style="width:20px;height:20px"> JPYC</label></div></div>
+<div class="card"><div class="lbl">お店が入力する金額 · Amount (yen)</div><input id="amt" type="number" inputmode="numeric" value="150"></div>
+<div class="sp"></div><button class="btn" id="toConfirm">確認へ<small>Continue</small></button></div></section>
+
+<section class="scr" id="confirm"><div class="top"><button class="back" data-go="pay">‹</button><span class="env">TESTNET</span></div><div class="body">
+<h2>この金額で支払いますか？</h2><p class="en">Confirm payment</p>
+<div class="card c"><div class="yen" style="font-size:44px" id="cAmt"></div><div class="lbl" id="cUsdc"></div><div class="lbl">StarPay テスト店へ</div></div>
+<div class="info" id="cFee" style="font-size:13px"></div><div class="sp"></div>
+<button class="btn big" id="payBtn">顔認証で支払う<small>Pay with passkey</small></button></div></section>
+
+<section class="scr" id="success"><div class="top"><span class="logo">RIVO</span><span class="env">TESTNET</span></div><div class="body c">
+<div class="ok">✓</div><h2>支払いました</h2><div class="yen" style="font-size:36px" id="sAmt"></div>
+<div class="stamp"><span id="sBadge"></span><span class="en">memory</span></div><p class="lbl">思い出が1つ増えました · A memory was added</p>
+<a id="sTx" target="_blank"></a><div class="lbl">Polygonscan (Amoy) で確認</div><div class="sp"></div>
+<button class="btn" data-go="home">ホームへ<small>Home</small></button></div></section>
+
+<section class="scr" id="mem"><div class="top"><button class="back" data-go="home">‹</button><span class="env">TESTNET</span></div><div class="body">
+<h2>思い出</h2><p class="en">Memories — history only, never a score</p><div id="badges"></div></div></section>
+<div id="log"></div><script type="module" src="app.js"></script></body></html>
