@@ -1,0 +1,582 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>RIVO — Dial menu prototype</title>
+<style>
+@font-face{font-family:BIZ;src:url(fonts/BIZUDPGothic-Regular.ttf);font-weight:400}
+@font-face{font-family:BIZ;src:url(fonts/BIZUDPGothic-Bold.ttf);font-weight:700}
+:root{
+  --teal:#00A497;--deep:#00594F;--gold:#F8B500;--sak:#F6C1CC;
+  --cream:#FFFBEF;--ink:#1F2A2A;--amber:#B97800;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{
+  height:100%;background:#E9E4D6;font-family:BIZ,Inter,system-ui,sans-serif;
+  color:var(--deep);-webkit-user-select:none;user-select:none;
+  -webkit-touch-callout:none;overscroll-behavior:none;
+}
+body{display:flex;align-items:center;justify-content:center;min-height:100dvh;padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)}
+
+/* Phone shell — full-bleed on narrow screens, framed on desktop */
+.app{
+  position:relative;width:100%;max-width:390px;height:100dvh;max-height:844px;
+  background:var(--cream);overflow:hidden;display:flex;flex-direction:column;
+  touch-action:none;
+}
+@media (min-width:420px){
+  .app{
+    height:min(780px,100dvh);border-radius:44px;border:10px solid #1F2A2A;
+    box-shadow:0 18px 50px rgba(0,40,36,.25);
+  }
+}
+
+.sb{height:40px;display:flex;justify-content:space-between;padding:12px 26px 0;font:600 13px Inter,sans-serif;color:var(--ink);flex:none}
+.top{display:flex;align-items:center;justify-content:space-between;padding:6px 20px 0;min-height:44px;flex:none}
+.logo{font:800 20px Inter,sans-serif;letter-spacing:.12em;color:var(--teal)}
+.demo{font:700 11px BIZ;background:#fff;border:1.5px dashed var(--teal);color:var(--deep);padding:4px 10px;border-radius:12px;display:inline-flex;align-items:center}
+.body{flex:1;padding:12px 20px 20px;display:flex;flex-direction:column;gap:14px;min-height:0}
+.en{font:400 12px Inter,sans-serif;color:#4E7A74;margin-top:2px}
+.card{background:#fff;border-radius:22px;padding:20px 18px;box-shadow:0 2px 0 rgba(0,89,79,.08)}
+.btn{
+  min-height:56px;border-radius:20px;background:var(--deep);color:#fff;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  font:700 17px BIZ;border:0;width:100%;cursor:pointer;-webkit-tap-highlight-color:transparent;
+}
+.btn small{font:500 11px Inter,sans-serif;opacity:.85}
+.btn.big{min-height:84px;font-size:24px;border-radius:26px}
+.btn.ghost{background:#fff;color:var(--deep);border:2px solid var(--deep)}
+.yen{font-family:Inter,sans-serif;font-weight:700;color:var(--ink);font-variant-numeric:tabular-nums}
+.lbl{font-size:12px;color:#4E7A74}
+.chip{display:inline-flex;align-items:center;gap:6px;font-size:12px;background:#E3F3F1;color:var(--deep);padding:6px 10px;border-radius:12px}
+.sp{flex:1}
+.back{
+  width:44px;height:44px;border-radius:22px;border:0;background:none;
+  display:flex;align-items:center;justify-content:center;font-size:26px;color:var(--deep);cursor:pointer;
+}
+
+/* Dock tab */
+.dock{
+  position:absolute;top:42%;width:22px;height:64px;background:var(--deep);
+  display:flex;align-items:center;justify-content:center;z-index:5;
+  touch-action:none;cursor:pointer;
+}
+.dock.r{right:0;border-radius:32px 0 0 32px}
+.dock.l{left:0;border-radius:0 32px 32px 0}
+.dock i{width:14px;height:14px;border-radius:50%;border:2px solid var(--gold);display:block;pointer-events:none}
+.dock-hit{
+  position:absolute;top:42%;width:44px;height:64px;z-index:5;touch-action:none;
+  margin-top:0;transform:translateY(-0%);
+}
+.dock-hit.r{right:0}
+.dock-hit.l{left:0}
+
+.edge-tip{
+  position:absolute;z-index:7;background:#fff;color:var(--deep);border-radius:12px;
+  padding:6px 10px;font-size:12px;box-shadow:0 2px 6px rgba(0,0,0,.15);
+  pointer-events:none;transition:opacity .25s;
+}
+.edge-tip.r{right:30px;top:calc(42% + 16px)}
+.edge-tip.l{left:30px;top:calc(42% + 16px)}
+.edge-tip .en{font-size:11px;display:block}
+.edge-tip.hide{opacity:0;visibility:hidden}
+
+/* Dial overlay */
+.scrim{
+  position:absolute;inset:0;background:rgba(0,40,36,.42);backdrop-filter:blur(2px);
+  -webkit-backdrop-filter:blur(2px);z-index:4;opacity:0;pointer-events:none;
+  transition:opacity .18s ease-out;touch-action:none;
+}
+.scrim.on{opacity:1;pointer-events:auto}
+
+.dial{
+  position:absolute;width:360px;height:360px;border-radius:50%;top:calc(42% - 180px + 32px);
+  background:radial-gradient(circle,#00594F 0 34%,#0B6B60 35% 100%);
+  box-shadow:0 0 0 6px rgba(255,251,239,.6);z-index:6;
+  touch-action:none;opacity:0;pointer-events:none;
+  transition:opacity .18s ease-out,transform .18s ease-out;
+  transform:scale(.92);
+}
+.dial.r{right:-180px}
+.dial.l{left:-180px}
+.dial.on{opacity:1;pointer-events:auto;transform:scale(1)}
+@media (prefers-reduced-motion:reduce){
+  .dial{transition:opacity .18s ease-out}
+  .dial.on{transform:none}
+}
+
+.hub{
+  position:absolute;width:96px;height:96px;margin:-48px;left:50%;top:50%;
+  border-radius:50%;border:3px double var(--gold);transform:rotate(-12deg);
+  pointer-events:none;transition:transform .12s ease-out;
+}
+.hub.press{transform:rotate(-12deg) scale(.92)}
+
+.it{
+  position:absolute;width:80px;height:80px;margin:-40px;border-radius:50%;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  color:#fff;font:700 14px BIZ;text-align:center;line-height:1.2;
+  pointer-events:none;transition:background .12s,color .12s,box-shadow .12s,transform .12s;
+}
+.it span{font-size:18px;line-height:1.1}
+.it em{font:500 11px Inter,sans-serif;font-style:normal;opacity:.85;max-width:72px}
+.it.on{
+  background:var(--cream);color:var(--deep);
+  box-shadow:0 0 0 3px var(--gold);transform:scale(1.04);
+}
+
+.rd{
+  position:absolute;left:14px;right:14px;top:90px;min-height:72px;z-index:7;
+  background:#fff;border-radius:18px;padding:14px 16px;
+  box-shadow:0 4px 14px rgba(0,40,36,.18);color:var(--deep);
+  display:flex;flex-direction:column;justify-content:center;
+  opacity:0;pointer-events:none;transition:opacity .18s ease-out;
+}
+.rd.on{opacity:1}
+
+/* Pay stays above scrim */
+.pay-wrap{position:relative;z-index:8}
+
+/* Placeholder screens */
+.screen{display:none;flex:1;flex-direction:column;min-height:0}
+.screen.on{display:flex}
+.ph-body{flex:1;padding:12px 20px 24px;display:flex;flex-direction:column;gap:14px}
+.ph-title{font:700 22px BIZ;line-height:1.35}
+.ph-icon{font-size:48px;margin:24px 0 8px;text-align:center}
+
+.home-pay{position:relative;z-index:8}
+</style>
+</head>
+<body>
+<div class="app" id="app">
+
+  <!-- HOME -->
+  <section class="screen on" id="screen-home" style="flex-direction:column;display:none">
+    <div class="sb"><span id="clock">9:41</span><span>●●● ▮</span></div>
+    <div class="top">
+      <span class="logo">RIVO</span>
+      <span class="demo">デモ DEMO</span>
+    </div>
+    <div class="body">
+      <div class="card">
+        <div class="lbl">残高 · Balance</div>
+        <div class="yen" style="font-size:44px;margin:6px 0">¥5,000</div>
+        <div class="chip">1日の上限 未設定 · Daily limit: Not set</div>
+      </div>
+      <div class="sp"></div>
+      <div class="home-pay">
+        <button type="button" class="btn big" id="payBtn">支払う<small style="font-size:13px">Pay</small></button>
+      </div>
+    </div>
+
+    <div class="dock r" id="dock" aria-hidden="true"><i></i></div>
+    <div class="dock-hit r" id="dockHit" role="button" aria-label="メニュー · Menu" tabindex="0"></div>
+    <div class="edge-tip r" id="edgeTip">端をタップでメニュー<br><span class="en">Tap edge for menu</span></div>
+
+    <div class="scrim" id="scrim"></div>
+    <div class="dial r" id="dial" aria-hidden="true">
+      <div class="hub" id="hub"></div>
+      <!-- items injected -->
+    </div>
+    <div class="rd" id="readout">
+      <div style="font:700 16px BIZ" id="rdJp"></div>
+      <div class="en" id="rdEn"></div>
+      <div class="lbl" style="margin-top:4px" id="rdHint">指をはなすと開きます · Release to open</div>
+    </div>
+  </section>
+
+  <!-- PLACEHOLDER -->
+  <section class="screen" id="screen-place" style="flex-direction:column">
+    <div class="sb"><span class="clock2">9:41</span><span>●●● ▮</span></div>
+    <div class="top">
+      <button type="button" class="back" id="backBtn" aria-label="戻る">‹</button>
+      <span class="demo">デモ DEMO</span>
+    </div>
+    <div class="ph-body">
+      <div class="ph-icon" id="phIcon"></div>
+      <div class="ph-title" id="phTitle"></div>
+      <div class="en" id="phEn"></div>
+      <div class="card" style="margin-top:8px">
+        <div class="lbl">プレースホルダー · Placeholder</div>
+        <div style="font-size:14px;margin-top:6px;line-height:1.55">この画面はダイヤル試作用です。実機能はありません。<span class="en" style="display:block">Dial prototype only — no real feature here.</span></div>
+      </div>
+      <div class="sp"></div>
+      <button type="button" class="btn ghost" id="backBtn2">ホームへ<small>Back to Home</small></button>
+    </div>
+  </section>
+
+</div>
+
+<script>
+(function () {
+  // Demo items — match dial_ui.DEMO_ITEMS / 02-home.html
+  const ITEMS = [
+    { ic: '❀', jp: '思い出', en: 'Memory', enFull: 'Memory' },
+    { ic: '＋', jp: 'お金を追加', en: 'Add money', enFull: 'Add money · DEMO' },
+    { ic: '◷', jp: '1日の上限', en: 'Daily limit', enFull: 'Daily limit' },
+    { ic: '≡', jp: '履歴', en: 'History', enFull: 'History' },
+  ];
+  const N = ITEMS.length;
+  const ARC = 120;                 // degrees span
+  const STEP = ARC / Math.max(N - 1, 1); // 40° for 4 items
+  const START = -60;               // first item angle (west=0, +down)
+  const RADIUS = 136;
+  const HUB_R = 48;
+  const DIAL_R = 180;
+
+  const $ = (id) => document.getElementById(id);
+  const app = $('app');
+  const dialEl = $('dial');
+  const hubEl = $('hub');
+  const scrim = $('scrim');
+  const readout = $('readout');
+  const dock = $('dock');
+  const dockHit = $('dockHit');
+  const edgeTip = $('edgeTip');
+  const screenHome = $('screen-home');
+  const screenPlace = $('screen-place');
+
+  let side = 'r'; // 'r' | 'l'
+  let selected = 0;
+  let lastSelected = 0;
+  let dialOpen = false;
+  let tracking = false;
+  let pointerId = null;
+  let startX = 0, startY = 0;
+  let moved = false;
+  let firstUseHint = true;
+  let tipSeen = false;
+  let suppressClick = false;
+
+  // Position items with dial_ui math
+  function itemPos(i, s) {
+    const a = (START + i * STEP) * Math.PI / 180;
+    const x = s === 'r' ? 180 - RADIUS * Math.cos(a) : 180 + RADIUS * Math.cos(a);
+    const y = 180 + RADIUS * Math.sin(a);
+    return { x, y, a };
+  }
+
+  function buildItems() {
+    dialEl.querySelectorAll('.it').forEach((n) => n.remove());
+    ITEMS.forEach((it, i) => {
+      const { x, y } = itemPos(i, side);
+      const el = document.createElement('div');
+      el.className = 'it' + (i === selected ? ' on' : '');
+      el.dataset.i = i;
+      el.style.left = x.toFixed(0) + 'px';
+      el.style.top = y.toFixed(0) + 'px';
+      el.innerHTML = '<span>' + it.ic + '</span>' + it.jp + '<em>' + it.enFull + '</em>';
+      dialEl.appendChild(el);
+    });
+  }
+
+  function setSide(s) {
+    side = s;
+    dock.className = 'dock ' + s;
+    dockHit.className = 'dock-hit ' + s;
+    dialEl.className = 'dial ' + s + (dialOpen ? ' on' : '');
+    edgeTip.className = 'edge-tip ' + s + (tipSeen || dialOpen ? ' hide' : '');
+    buildItems();
+  }
+
+  function vibe(pattern) {
+    try {
+      if (navigator.vibrate) navigator.vibrate(pattern);
+    } catch (_) {}
+  }
+
+  function updateReadout() {
+    const it = ITEMS[selected];
+    $('rdJp').textContent = it.ic + ' ' + it.jp;
+    $('rdEn').textContent = it.en;
+    $('rdHint').style.display = firstUseHint ? '' : 'none';
+  }
+
+  function highlight(i, fromEnd) {
+    if (i < 0) i = 0;
+    if (i > N - 1) i = N - 1;
+    const prev = selected;
+    selected = i;
+    dialEl.querySelectorAll('.it').forEach((el) => {
+      el.classList.toggle('on', +el.dataset.i === selected);
+    });
+    updateReadout();
+    if (prev !== selected) {
+      if (selected === 0 || selected === N - 1) {
+        vibe([10, 40, 10]); // soft ×2 at ends
+      } else {
+        vibe(8); // selection tick
+      }
+    } else if (fromEnd) {
+      vibe([10, 40, 10]);
+    }
+  }
+
+  function dialCenter() {
+    const r = dialEl.getBoundingClientRect();
+    return { cx: r.left + r.width / 2, cy: r.top + r.height / 2 };
+  }
+
+  // Angle from west (left), positive = down — matches dial_ui
+  function angleFromPointer(clientX, clientY) {
+    const { cx, cy } = dialCenter();
+    const dx = cx - clientX; // west-positive for right dial
+    const dy = clientY - cy;
+    // For left dial, items sit on the east side → mirror
+    if (side === 'l') {
+      return Math.atan2(dy, clientX - cx) * 180 / Math.PI;
+    }
+    return Math.atan2(dy, dx) * 180 / Math.PI;
+  }
+
+  function distFromCenter(clientX, clientY) {
+    const { cx, cy } = dialCenter();
+    const dx = clientX - cx, dy = clientY - cy;
+    return Math.hypot(dx, dy);
+  }
+
+  function indexFromAngle(deg) {
+    // clamp to arc, soft snap
+    let a = deg;
+    if (a < START) a = START;
+    if (a > START + ARC) a = START + ARC;
+    const raw = (a - START) / STEP;
+    return Math.round(Math.max(0, Math.min(N - 1, raw)));
+  }
+
+  function openDial(opts) {
+    opts = opts || {};
+    if (!dialOpen) {
+      dialOpen = true;
+      selected = typeof opts.index === 'number' ? opts.index : lastSelected;
+      buildItems();
+      updateReadout();
+      scrim.classList.add('on');
+      dialEl.classList.add('on');
+      dialEl.setAttribute('aria-hidden', 'false');
+      readout.classList.add('on');
+      edgeTip.classList.add('hide');
+      tipSeen = true;
+      vibe(10); // light ×1 on open
+    }
+  }
+
+  function closeDial() {
+    if (!dialOpen) return;
+    dialOpen = false;
+    tracking = false;
+    scrim.classList.remove('on');
+    dialEl.classList.remove('on');
+    dialEl.setAttribute('aria-hidden', 'true');
+    readout.classList.remove('on');
+    hubEl.classList.remove('press');
+  }
+
+  function openPlaceholder() {
+    const it = ITEMS[selected];
+    lastSelected = selected;
+    firstUseHint = false;
+    hubEl.classList.add('press');
+    vibe(25); // medium ×1 hanko press
+    setTimeout(function () {
+      closeDial();
+      hubEl.classList.remove('press');
+      $('phIcon').textContent = it.ic;
+      $('phTitle').textContent = it.jp;
+      $('phEn').textContent = it.enFull;
+      screenHome.classList.remove('on');
+      screenHome.style.display = 'none';
+      screenPlace.classList.add('on');
+    }, 120);
+  }
+
+  function goHome() {
+    screenPlace.classList.remove('on');
+    screenHome.classList.add('on');
+    screenHome.style.display = 'flex';
+  }
+
+  // --- Pointer handling ---
+  function onDown(e) {
+    if (screenPlace.classList.contains('on')) return;
+    const t = e.target;
+    // Pay button: ignore dial
+    if (t.closest && t.closest('#payBtn')) return;
+
+    const onDock = t === dockHit || t === dock || (t.closest && t.closest('#dockHit,#dock'));
+    const onScrim = t === scrim;
+    const onDial = t === dialEl || (t.closest && t.closest('#dial'));
+
+    if (!dialOpen && !onDock) return;
+    if (dialOpen && onScrim && !tracking) {
+      // tap scrim to dismiss (if not mid-drag)
+      closeDial();
+      e.preventDefault();
+      return;
+    }
+
+    if (!onDock && !onDial && !dialOpen) return;
+
+    e.preventDefault();
+    tracking = true;
+    moved = false;
+    pointerId = e.pointerId;
+    startX = e.clientX;
+    startY = e.clientY;
+    try { dockHit.setPointerCapture(e.pointerId); } catch (_) {}
+    try { dialEl.setPointerCapture(e.pointerId); } catch (_) {}
+    try { app.setPointerCapture(e.pointerId); } catch (_) {}
+
+    if (!dialOpen) {
+      openDial({ index: lastSelected });
+    }
+  }
+
+  function onMove(e) {
+    if (!tracking || (pointerId !== null && e.pointerId !== pointerId)) return;
+    e.preventDefault();
+    const dx = e.clientX - startX, dy = e.clientY - startY;
+    if (Math.hypot(dx, dy) > 8) moved = true;
+
+    if (!dialOpen) return;
+
+    const dist = distFromCenter(e.clientX, e.clientY);
+    // Only update selection when finger is in the ring (not deep in hub)
+    if (dist >= HUB_R * 0.6 && dist <= DIAL_R * 1.35) {
+      const ang = angleFromPointer(e.clientX, e.clientY);
+      const idx = indexFromAngle(ang);
+      // detect attempted overshoot past ends
+      const atEnd = (ang < START - 8 && selected === 0) || (ang > START + ARC + 8 && selected === N - 1);
+      highlight(idx, atEnd);
+    }
+  }
+
+  function zoneAt(clientX, clientY) {
+    const dist = distFromCenter(clientX, clientY);
+    if (dist < HUB_R) return 'center';
+    if (dist > DIAL_R + 10) return 'outside';
+    return 'item';
+  }
+
+  function onUp(e) {
+    if (!tracking || (pointerId !== null && e.pointerId !== pointerId)) return;
+    e.preventDefault();
+    tracking = false;
+    const x = e.clientX, y = e.clientY;
+    pointerId = null;
+
+    if (!dialOpen) return;
+
+    // Quick tap on dock with little movement → leave dial open (discoverability)
+    if (!moved) {
+      // tap on an item while open: if finger is over item ring, select
+      const z = zoneAt(x, y);
+      if (z === 'item') {
+        // refine by angle
+        const ang = angleFromPointer(x, y);
+        highlight(indexFromAngle(ang));
+        openPlaceholder();
+      } else if (z === 'center' || z === 'outside') {
+        // tap dock opens and stays; tap center/outside cancels
+        // If the down started on dock and didn't move, keep open
+        const startedOnDock = true; // we only track from dock/dial
+        // Distinguishing: if release is still near dock edge, keep open
+        const appR = app.getBoundingClientRect();
+        const nearDock = side === 'r'
+          ? (x > appR.right - 50)
+          : (x < appR.left + 50);
+        if (nearDock) {
+          // stay open
+        } else {
+          closeDial();
+        }
+      }
+      return;
+    }
+
+    // Dragged: release to open or cancel
+    const z = zoneAt(x, y);
+    if (z === 'item') {
+      openPlaceholder();
+    } else {
+      // center or outside → cancel
+      closeDial();
+    }
+  }
+
+  function onCancel(e) {
+    if (!tracking) return;
+    tracking = false;
+    pointerId = null;
+    closeDial();
+  }
+
+  // Bind pointer events (touch + mouse)
+  ['pointerdown'].forEach((ev) => {
+    dockHit.addEventListener(ev, onDown, { passive: false });
+    dock.addEventListener(ev, onDown, { passive: false });
+    dialEl.addEventListener(ev, onDown, { passive: false });
+    scrim.addEventListener(ev, onDown, { passive: false });
+  });
+  window.addEventListener('pointermove', onMove, { passive: false });
+  window.addEventListener('pointerup', onUp, { passive: false });
+  window.addEventListener('pointercancel', onCancel, { passive: false });
+
+  // Prevent page scroll/zoom while interacting
+  document.addEventListener('touchmove', function (e) {
+    if (tracking || dialOpen) e.preventDefault();
+  }, { passive: false });
+  document.addEventListener('gesturestart', function (e) { e.preventDefault(); });
+
+  // Keyboard fallback
+  dockHit.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      if (dialOpen) closeDial(); else openDial();
+    }
+  });
+
+  $('backBtn').addEventListener('click', goHome);
+  $('backBtn2').addEventListener('click', goHome);
+  $('payBtn').addEventListener('click', function () {
+    // Pay is never in the dial — brief toast via alert-less flash
+    const b = $('payBtn');
+    b.style.transform = 'scale(.98)';
+    setTimeout(function () { b.style.transform = ''; }, 120);
+  });
+
+  // Clock
+  function tickClock() {
+    try {
+      const t = new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'Asia/Singapore' });
+      $('clock').textContent = t;
+      document.querySelectorAll('.clock2').forEach(function (el) { el.textContent = t; });
+    } catch (_) {}
+  }
+  tickClock();
+  setInterval(tickClock, 30000);
+
+  // Init
+  screenHome.style.display = 'flex';
+  screenHome.classList.add('on');
+  setSide('r');
+  buildItems();
+  updateReadout();
+
+  // Expose for Playwright tests
+  window.__dial = {
+    openDial: openDial,
+    close: closeDial,
+    select: function (i) { highlight(i); },
+    getSelected: function () { return selected; },
+    isOpen: function () { return dialOpen; },
+    items: ITEMS,
+    openItem: function (i) { selected = i; openPlaceholder(); },
+    goHome: goHome,
+  };
+})();
+</script>
+</body>
+</html>
