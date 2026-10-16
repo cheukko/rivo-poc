@@ -100,6 +100,8 @@ h2+.en{font-size:13px}
 }
 .btn.amber{background:#6A4600}
 .yen{font-family:Inter,sans-serif;font-weight:700;color:var(--ink);font-variant-numeric:tabular-nums}
+.yen.approx{font-size:30px;line-height:1.15;margin:6px 0}
+.yen.approx small{font:500 13px Inter,sans-serif;color:var(--en)}
 .lbl{font-size:12px;color:var(--en);line-height:1.45}
 .chip{
   display:inline-flex;align-items:center;gap:6px;font-size:12px;background:#E3F3F1;color:var(--deep);
