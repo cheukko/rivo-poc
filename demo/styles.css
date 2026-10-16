@@ -304,13 +304,6 @@ details.more summary::-webkit-details-marker{display:none}
 .faces i{width:8px;height:8px;border-radius:50%;display:block;background:#CFE7E3}
 .faces i.on{background:var(--deep)}
 #dial-root.side-l .faces{right:auto;left:8px}
-.rd{
-  position:absolute;left:14px;right:14px;top:90px;min-height:72px;z-index:7;background:#fff;border-radius:18px;
-  padding:14px 16px;box-shadow:0 4px 14px rgba(0,40,36,.18);color:var(--deep);
-  display:flex;flex-direction:column;justify-content:center;opacity:0;pointer-events:none;transition:opacity .18s ease-out;
-}
-body.frame .rd{top:108px}
-.rd.on{opacity:1}
 .pay-wrap{position:relative;z-index:8}
 .hero{position:relative;height:250px;margin:-12px -20px 0;border-radius:0 0 28px 28px;overflow:hidden;flex:none}
 .hero-title{position:absolute;left:0;right:0;top:22px;text-align:center}
@@ -428,7 +421,7 @@ body.intro-on.intro-end .join-rest{opacity:1;transform:none;transition:opacity .
 @keyframes i-tag{to{opacity:1;transform:none}}
 
 @media (prefers-reduced-motion:reduce){
-  .dial,.scrim,.rd{transition:none}
+  .dial,.scrim{transition:none}
   .dial.on{transform:none}
   #intro{display:none}
 }
