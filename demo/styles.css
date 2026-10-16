@@ -88,6 +88,13 @@ h2+.en{font-size:13px}
 .btn.copied{color:var(--on);border-color:var(--on)}
 .btn.copied span{display:inline-flex;align-items:center;justify-content:center;gap:6px}
 .btn.copied small{color:var(--on)}
+.have{
+  border:0;background:none;color:var(--deep);min-height:44px;padding:4px 8px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  font:700 13px BIZ,sans-serif;text-decoration:underline;
+}
+.have small{font:500 11px Inter,sans-serif;color:var(--en);text-decoration:none}
+.have:disabled{opacity:.5}
 .btn:disabled,.btn.off{
   background:#8AAEAA;color:#fff;border-color:transparent;cursor:default;
 }
