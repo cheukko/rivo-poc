@@ -203,8 +203,12 @@ h2+.en{font-size:13px}
   font:700 14px BIZ,sans-serif;display:flex;align-items:center;justify-content:center;
 }
 .lights{
-  display:inline-flex;gap:10px;align-items:center;background:#fff;border:1px solid #DCEAE6;
+  display:inline-flex;gap:8px;align-items:center;background:#fff;border:1px solid #DCEAE6;
   border-radius:12px;padding:4px 8px;position:absolute;right:16px;
+}
+.net{
+  font:600 9px Inter,sans-serif;letter-spacing:.02em;color:var(--deep);
+  background:#E7F6F4;border-radius:999px;padding:3px 6px;line-height:1;
 }
 .light{display:inline-flex;align-items:center;gap:4px;line-height:1.1}
 .light i{
